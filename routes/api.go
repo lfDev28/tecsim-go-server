@@ -21,6 +21,8 @@ type AssetDetail struct {
 func PassAllAssets(db *sql.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get the locationId and userId from the request body
+
+		fmt.Println("Request receieved")
 		var Request struct {
 			LocationId int    `json:"locationId"`
 			UserId     string `json:"userId"`
@@ -164,7 +166,7 @@ func fetchChildLocations(locationIds []int, db *sql.DB) ([]int, error) {
 	}
 	defer rows.Close()
 
-	var childIds []int
+	childIds := make([]int, 0)
 	for rows.Next() {
 		var id int
 		if err = rows.Scan(&id); err != nil {
@@ -175,6 +177,11 @@ func fetchChildLocations(locationIds []int, db *sql.DB) ([]int, error) {
 
 	if err = rows.Err(); err != nil {
 		return nil, err
+	}
+
+	// If no child locations are found, return the initial location IDs
+	if len(childIds) == 0 {
+		return locationIds, nil
 	}
 
 	return childIds, nil
